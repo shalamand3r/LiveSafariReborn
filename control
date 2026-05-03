@@ -4,9 +4,8 @@ Depends: firmware (>= 15.0), mobilesubstrate
 Version: 2.0
 Architecture: iphoneos-arm64
 Description: Make Safari's icon point north
-Icon: https://skitty.xyz/repo/icons/xyz.skitty.livesafari.png
-Depiction: https://skitty.xyz/repo/depictions/?p=xyz.skitty.livesafari
-SileoDepiction: https://skitty.xyz/repo/depictions/?s=xyz.skitty.livesafari
-Maintainer: Skitty
-Author: Skitty
+Icon: https://github.com/shalamand3r/shalamand3r.github.io/blob/main/icons/livesafarireborn.png?raw=true
+SileoDepiction: https://raw.githubusercontent.com/shalamand3r/shalamand3r.github.io/refs/heads/main/depictions/livesafarireborn.json
+Maintainer: Skitty/shalamand3r
+Author: Skitty/shalamand3r
 Section: Tweaks
