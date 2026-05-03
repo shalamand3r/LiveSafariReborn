@@ -15,4 +15,4 @@ LiveSafariReborn revives Skitty’s [LiveSafari](https://github.com/Skittyblock/
 
 LiveSafariReborn supports any **rootless jailbreak** from iOS 15.0 to 17.0
 
-Download the latest version from **[Releases](https://github.com/shalamand3r/LiveSafariReborn/releases)**
+Download the latest version from **[Releases](https://github.com/shalamand3r/LiveSafariReborn/releases)** or **[Add my Sileo Repo](https://shalamand3r.github.io)**
