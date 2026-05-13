@@ -6,7 +6,7 @@ LiveSafariReborn revives Skitty’s [LiveSafari](https://github.com/Skittyblock/
 ---
 
 <p align="center">
-  <img src="https://github.com/shalamand3r/LiveSafariReborn/blob/master/LiveSafariRebornIcon.png" width="300">
+  <img src="https://github.com/shalamand3r/LiveSafariReborn/blob/main/LiveSafariRebornIcon.png" width="300">
 </p>
 
 ---
