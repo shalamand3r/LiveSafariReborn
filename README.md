@@ -5,16 +5,12 @@ LiveSafariReborn revives Skitty’s [LiveSafari](https://github.com/Skittyblock/
 
 ---
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="LiveSafariRebornIconDark.png">
-        <img src="LiveSafariRebornIconLight.png" width="300" alt="LiveSafariReborn icon" style="border-radius: 18px;">
-      </picture>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="LiveSafariRebornIconDark.png">
+    <img src="LiveSafariRebornIconLight.png" width="300" alt="LiveSafariReborn icon" style="border-radius: 18px;">
+  </picture>
+</p>
 
 ---
 
