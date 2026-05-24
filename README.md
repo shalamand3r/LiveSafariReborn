@@ -5,9 +5,16 @@ LiveSafariReborn revives Skitty’s [LiveSafari](https://github.com/Skittyblock/
 
 ---
 
-<p align="center">
-  <img src="https://github.com/shalamand3r/LiveSafariReborn/blob/master/LiveSafariRebornIcon.png" width="300">
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="LiveSafariRebornIconDark.png">
+        <img src="LiveSafariRebornIconLight.png" width="300" alt="LiveSafariReborn icon" style="border-radius: 18px;">
+      </picture>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -24,4 +31,3 @@ Download the latest version from **[Releases](https://github.com/shalamand3r/Liv
     <img src="https://img.shields.io/github/downloads/shalamand3r/LiveSafariReborn/total?style=plastic&logo=github&label=Downloads&color=ff766a">
   </a>
 </p>
-
