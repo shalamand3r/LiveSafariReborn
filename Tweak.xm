@@ -59,6 +59,7 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	NSHashTable *_subscribers;
 	BOOL _isUpdating;
 	BOOL _lowPowerModeEnabled;
+	BOOL _easeNextHeading;
 	CLLocationDegrees _lastHeading;
 }
 + (instancetype)sharedCoordinator;
@@ -100,7 +101,7 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 
 	[_subscribers addObject:subscriber];
 	if (_lowPowerModeEnabled) {
-		[subscriber ls_applyRotation:LSDefaultNeedleRotation];
+		[subscriber ls_applyRotation:LSDefaultNeedleRotation eased:YES];
 		return;
 	}
 
@@ -137,16 +138,20 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	_lowPowerModeEnabled = enabled;
 	_lastHeading = -1.0;
 	if (enabled) {
+		_easeNextHeading = NO;
 		if (_isUpdating) {
 			[_locationManager stopUpdatingHeading];
 			_isUpdating = NO;
 		}
 		for (SBSafariIconImageView *subscriber in _subscribers.allObjects) {
-			[subscriber ls_applyRotation:LSDefaultNeedleRotation];
+			[subscriber ls_applyRotation:LSDefaultNeedleRotation eased:YES];
 		}
-	} else if (_subscribers.count > 0 && [CLLocationManager headingAvailable]) {
-		_isUpdating = YES;
-		[_locationManager startUpdatingHeading];
+	} else {
+		_easeNextHeading = YES;
+		if (_subscribers.count > 0 && [CLLocationManager headingAvailable]) {
+			_isUpdating = YES;
+			[_locationManager startUpdatingHeading];
+		}
 	}
 }
 
@@ -159,8 +164,13 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 
 	_lastHeading = heading;
 	for (SBSafariIconImageView *subscriber in _subscribers.allObjects) {
-		[subscriber ls_applyHeading:heading];
+		if (_easeNextHeading) {
+			[subscriber ls_applyRotation:-heading * M_PI / 180.0 eased:YES];
+		} else {
+			[subscriber ls_applyHeading:heading];
+		}
 	}
+	_easeNextHeading = NO;
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
@@ -342,11 +352,16 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 
 %new
 - (void)ls_applyHeading:(CLLocationDegrees)heading {
-	[self ls_applyRotation:-heading * M_PI / 180.0];
+	[self ls_applyRotation:-heading * M_PI / 180.0 eased:NO];
 }
 
 %new
 - (void)ls_applyRotation:(CGFloat)rotation {
+	[self ls_applyRotation:rotation eased:NO];
+}
+
+%new
+- (void)ls_applyRotation:(CGFloat)rotation eased:(BOOL)eased {
 	if (!self.needle || ![self isAnimationAllowed]) return;
 
 	CGAffineTransform scale = CGAffineTransformMakeScale(LSNeedleScale, LSNeedleScale);
@@ -364,8 +379,8 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"affineTransform"];
 	animation.fromValue = [NSValue valueWithCGAffineTransform:currentTransform];
 	animation.toValue = [NSValue valueWithCGAffineTransform:transform];
-	animation.duration = 0.18;
-	animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+	animation.duration = eased ? 0.35 : 0.18;
+	animation.timingFunction = [CAMediaTimingFunction functionWithName:eased ? kCAMediaTimingFunctionEaseInEaseOut : kCAMediaTimingFunctionLinear];
 	[needleLayer addAnimation:animation forKey:@"LSHeadingAnimation"];
 }
 
