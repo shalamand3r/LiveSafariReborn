@@ -12,7 +12,7 @@ ADDITIONAL_CFLAGS += -fmodules-cache-path=$(MODULE_CACHE_DIR)
 
 TWEAK_NAME = LiveSafariReborn
 LiveSafariReborn_FILES = Tweak.xm
-LiveSafariReborn_FRAMEWORKS = CoreLocation
+LiveSafariReborn_FRAMEWORKS = CoreLocation QuartzCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

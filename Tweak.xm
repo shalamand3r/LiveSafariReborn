@@ -1,7 +1,7 @@
 #import "Tweak.h"
 
 static CGFloat const LSNeedleScale = 0.86;
-static CLLocationDegrees const LSHeadingFilter = 3.0;
+static CLLocationDegrees const LSHeadingFilter = 1.0;
 
 static NSString *LSRootPath(NSString *path) {
 	return [@"/var/jb" stringByAppendingString:path];
@@ -302,10 +302,21 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	CGAffineTransform scale = CGAffineTransformMakeScale(LSNeedleScale, LSNeedleScale);
 	CGAffineTransform rotation = CGAffineTransformMakeRotation(-heading * M_PI / 180.0);
 	CGAffineTransform transform = CGAffineTransformConcat(scale, rotation);
+	CALayer *needleLayer = self.needle.layer;
+	CALayer *presentationLayer = needleLayer.presentationLayer;
+	CGAffineTransform currentTransform = presentationLayer ? presentationLayer.affineTransform : needleLayer.affineTransform;
 
-	if (!CGAffineTransformEqualToTransform(self.needle.transform, transform)) {
-		self.needle.transform = transform;
-	}
+	[CATransaction begin];
+	[CATransaction setDisableActions:YES];
+	needleLayer.affineTransform = transform;
+	[CATransaction commit];
+
+	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"affineTransform"];
+	animation.fromValue = [NSValue valueWithCGAffineTransform:currentTransform];
+	animation.toValue = [NSValue valueWithCGAffineTransform:transform];
+	animation.duration = 0.18;
+	animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+	[needleLayer addAnimation:animation forKey:@"LSHeadingAnimation"];
 }
 
 - (void)dealloc {

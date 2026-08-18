@@ -1,7 +1,7 @@
 Package: com.shalamand3r.livesafarireborn
 Name: LiveSafariReborn
 Depends: firmware (>= 15.0), mobilesubstrate
-Version: 1.2
+Version: 1.1
 Architecture: iphoneos-arm64
 Description: Make Safari's icon point north
 Icon: https://github.com/shalamand3r/shalamand3r.github.io/blob/main/icons/livesafarireborn.png?raw=true
