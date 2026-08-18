@@ -1,6 +1,7 @@
 #import "Tweak.h"
 
 static CGFloat const LSNeedleScale = 0.86;
+static CGFloat const LSDefaultNeedleRotation = M_PI_4;
 static CLLocationDegrees const LSHeadingFilter = 1.0;
 
 static NSString *LSRootPath(NSString *path) {
@@ -57,11 +58,13 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	CLLocationManager *_locationManager;
 	NSHashTable *_subscribers;
 	BOOL _isUpdating;
+	BOOL _lowPowerModeEnabled;
 	CLLocationDegrees _lastHeading;
 }
 + (instancetype)sharedCoordinator;
 - (void)addSubscriber:(SBSafariIconImageView *)subscriber;
 - (void)removeSubscriber:(SBSafariIconImageView *)subscriber;
+- (void)powerStateDidChange:(NSNotification *)notification;
 @end
 
 @implementation LSHeadingCoordinator
@@ -82,7 +85,12 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 		_locationManager = [[CLLocationManager alloc] init];
 		_locationManager.delegate = self;
 		_locationManager.headingFilter = LSHeadingFilter;
+		_lowPowerModeEnabled = [NSProcessInfo processInfo].lowPowerModeEnabled;
 		_lastHeading = -1.0;
+		[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(powerStateDidChange:)
+												 name:NSProcessInfoPowerStateDidChangeNotification
+											  object:nil];
 	}
 	return self;
 }
@@ -91,7 +99,12 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	if (!subscriber) return;
 
 	[_subscribers addObject:subscriber];
-	if (!_isUpdating && _subscribers.count > 0 && [CLLocationManager headingAvailable]) {
+	if (_lowPowerModeEnabled) {
+		[subscriber ls_applyRotation:LSDefaultNeedleRotation];
+		return;
+	}
+
+	if (!_isUpdating && [CLLocationManager headingAvailable]) {
 		_isUpdating = YES;
 		[_locationManager startUpdatingHeading];
 	}
@@ -110,7 +123,36 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	}
 }
 
+- (void)powerStateDidChange:(NSNotification *)notification {
+	if (![NSThread isMainThread]) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self powerStateDidChange:nil];
+		});
+		return;
+	}
+
+	BOOL enabled = [NSProcessInfo processInfo].lowPowerModeEnabled;
+	if (_lowPowerModeEnabled == enabled) return;
+
+	_lowPowerModeEnabled = enabled;
+	_lastHeading = -1.0;
+	if (enabled) {
+		if (_isUpdating) {
+			[_locationManager stopUpdatingHeading];
+			_isUpdating = NO;
+		}
+		for (SBSafariIconImageView *subscriber in _subscribers.allObjects) {
+			[subscriber ls_applyRotation:LSDefaultNeedleRotation];
+		}
+	} else if (_subscribers.count > 0 && [CLLocationManager headingAvailable]) {
+		_isUpdating = YES;
+		[_locationManager startUpdatingHeading];
+	}
+}
+
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
+	if (_lowPowerModeEnabled) return;
+
 	CLLocationDegrees heading = newHeading.magneticHeading;
 	if (newHeading.headingAccuracy < 0.0 || !isfinite(heading)) return;
 	if (_lastHeading >= 0.0 && LSHeadingDifference(heading, _lastHeading) < LSHeadingFilter) return;
@@ -133,6 +175,7 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 }
 
 - (void)dealloc {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_locationManager stopUpdatingHeading];
 	_locationManager.delegate = nil;
 	[_locationManager release];
@@ -240,7 +283,9 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 			needleView.contentMode = UIViewContentModeScaleAspectFit;
 			needleView.bounds = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bounds.size.height);
 			needleView.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
-			needleView.transform = CGAffineTransformMakeScale(LSNeedleScale, LSNeedleScale);
+			CGAffineTransform scale = CGAffineTransformMakeScale(LSNeedleScale, LSNeedleScale);
+			CGAffineTransform rotation = CGAffineTransformMakeRotation(LSDefaultNeedleRotation);
+			needleView.transform = CGAffineTransformConcat(scale, rotation);
 			self.needle = needleView;
 			[needleView release];
 			[self addSubview:self.needle];
@@ -297,11 +342,16 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 
 %new
 - (void)ls_applyHeading:(CLLocationDegrees)heading {
+	[self ls_applyRotation:-heading * M_PI / 180.0];
+}
+
+%new
+- (void)ls_applyRotation:(CGFloat)rotation {
 	if (!self.needle || ![self isAnimationAllowed]) return;
 
 	CGAffineTransform scale = CGAffineTransformMakeScale(LSNeedleScale, LSNeedleScale);
-	CGAffineTransform rotation = CGAffineTransformMakeRotation(-heading * M_PI / 180.0);
-	CGAffineTransform transform = CGAffineTransformConcat(scale, rotation);
+	CGAffineTransform rotationTransform = CGAffineTransformMakeRotation(rotation);
+	CGAffineTransform transform = CGAffineTransformConcat(scale, rotationTransform);
 	CALayer *needleLayer = self.needle.layer;
 	CALayer *presentationLayer = needleLayer.presentationLayer;
 	CGAffineTransform currentTransform = presentationLayer ? presentationLayer.affineTransform : needleLayer.affineTransform;

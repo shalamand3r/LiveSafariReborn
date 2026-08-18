@@ -27,4 +27,5 @@
 @property (nonatomic, retain) UIImageView *needle;
 @property (nonatomic, retain) NSNumber *ls_pausedState;
 - (void)ls_applyHeading:(CLLocationDegrees)heading;
+- (void)ls_applyRotation:(CGFloat)rotation;
 @end
