@@ -25,7 +25,6 @@
 
 @interface SBSafariIconImageView : SBLiveIconImageView
 @property (nonatomic, retain) UIImageView *needle;
-@property (nonatomic, retain) UIImage *ls_renderedContentsImage;
 @property (nonatomic, retain) NSNumber *ls_pausedState;
 - (void)ls_applyHeading:(CLLocationDegrees)heading;
 @end

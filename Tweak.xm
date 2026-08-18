@@ -145,7 +145,6 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 %subclass SBSafariIconImageView : SBLiveIconImageView
 
 %property (nonatomic, retain) UIImageView *needle;
-%property (nonatomic, retain) UIImage *ls_renderedContentsImage;
 %property (nonatomic, retain) NSNumber *ls_pausedState;
 
 - (UIImage *)squareContentsImage {
@@ -154,9 +153,6 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 }
 
 - (UIImage *)contentsImage {
-	UIImage *cachedImage = self.ls_renderedContentsImage;
-	if (cachedImage) return cachedImage;
-
 	UIImage *image = LSBackgroundImage();
 	if (!image) return %orig;
 
@@ -207,7 +203,6 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 		UIGraphicsEndImageContext();
 
 		UIImage *result = roundedMaskedImage ?: maskedImage;
-		self.ls_renderedContentsImage = result;
 		return result;
 	}
 
@@ -232,7 +227,6 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 	UIImage *roundedImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 
-	self.ls_renderedContentsImage = roundedImage;
 	return roundedImage ?: image;
 }
 
@@ -260,6 +254,15 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 
 - (void)layoutSubviews {
 	%orig;
+	CGFloat cornerRadius = self.continuousCornerRadius;
+	if (isfinite(cornerRadius) && cornerRadius > 0.0) {
+		self.layer.masksToBounds = YES;
+		self.layer.cornerRadius = cornerRadius;
+		if ([self.layer respondsToSelector:@selector(setCornerCurve:)]) {
+			self.layer.cornerCurve = kCACornerCurveContinuous;
+		}
+	}
+
 	if (!self.needle) return;
 
 	CGRect needleBounds = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bounds.size.height);
@@ -308,7 +311,6 @@ static CLLocationDegrees LSHeadingDifference(CLLocationDegrees first, CLLocation
 - (void)dealloc {
 	[[LSHeadingCoordinator sharedCoordinator] removeSubscriber:self];
 	self.needle = nil;
-	self.ls_renderedContentsImage = nil;
 	self.ls_pausedState = nil;
 	%orig;
 }
