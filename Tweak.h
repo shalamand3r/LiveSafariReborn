@@ -28,5 +28,5 @@
 @property (nonatomic, retain) NSNumber *ls_pausedState;
 - (void)ls_applyHeading:(CLLocationDegrees)heading;
 - (void)ls_applyRotation:(CGFloat)rotation;
-- (void)ls_applyRotation:(CGFloat)rotation eased:(BOOL)eased;
+- (void)ls_setRotationImmediately:(CGFloat)rotation;
 @end
