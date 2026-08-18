@@ -15,3 +15,7 @@ LiveSafariReborn_FILES = Tweak.xm
 LiveSafariReborn_FRAMEWORKS = CoreLocation
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+
+after-stage::
+	chmod 0755 "$(THEOS_STAGING_DIR)/Library" "$(THEOS_STAGING_DIR)/Library/Application Support" "$(THEOS_STAGING_DIR)/Library/Application Support/LiveSafariReborn"
+	chmod 0644 "$(THEOS_STAGING_DIR)/Library/Application Support/LiveSafariReborn/"*.png "$(THEOS_STAGING_DIR)/Library/MobileSubstrate/DynamicLibraries/$(TWEAK_NAME).plist"

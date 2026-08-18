@@ -9,7 +9,7 @@
 @interface SBIconImageView : UIView
 @property (nonatomic, readonly) double continuousCornerRadius; 
 - (UIImage *)squareContentsImage;
-- (UIImage *)_currentOverlayImage; // removed in iOS 14
+- (UIImage *)_currentOverlayImage;
 @end
 
 @interface SBLiveIconImageView : SBIconImageView
@@ -23,8 +23,9 @@
 - (void)setPaused:(BOOL)arg1;
 @end
 
-@interface SBSafariIconImageView : SBLiveIconImageView <CLLocationManagerDelegate>
-@property (nonatomic,retain) CLLocationManager *locationManager;
+@interface SBSafariIconImageView : SBLiveIconImageView
 @property (nonatomic, retain) UIImageView *needle;
-- (void)test;
+@property (nonatomic, retain) UIImage *ls_renderedContentsImage;
+@property (nonatomic, retain) NSNumber *ls_pausedState;
+- (void)ls_applyHeading:(CLLocationDegrees)heading;
 @end
